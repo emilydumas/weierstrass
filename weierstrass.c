@@ -2,7 +2,7 @@
  * Filename:      weierstrass.c
  * Description:   the Weierstrass P function
  * Author:        David Dumas <david@dumas.io>
- * Modified at:   Wed Nov  6 10:32:34 2013
+ * Modified at:   Wed Nov  6 11:55:23 2013
  *                
  * Copyright (C) 2013  David Dumas
  *                
@@ -27,6 +27,8 @@
 /* 4 pi^6 / 9 */
 #define _CONST_49PI6 427.28408603346863868009753051218662171876334581380
 
+/* 1/28 */
+#define _CONST_1_28 0.035714285714285714285714285714285714285714285714286
 
 /* For printf debugging (!) */
 void show(const char *name, gsl_complex value)
@@ -191,7 +193,7 @@ gsl_complex theta4(gsl_complex z, gsl_complex q)
    Out: g2 -> g[0]
         g3 -> g[1]
 */
-void compute_invariants(const gsl_complex tau, gsl_complex *g)
+void compute_invariants(gsl_complex tau, gsl_complex *g)
 {
   gsl_complex q, q14;
   gsl_complex t2,t3,t24,t34;
@@ -218,6 +220,60 @@ void compute_invariants(const gsl_complex tau, gsl_complex *g)
   g[0] = g2;
   g[1] = g3;
 }
+
+
+/* The Lattes map */
+gsl_complex P_doubler(gsl_complex p, const gsl_complex *g)
+{
+  gsl_complex p2, p3;
+  gsl_complex num;
+  gsl_complex denom;
+  gsl_complex term;
+
+  p2 = gsl_complex_mul(p,p);
+  p3 = gsl_complex_mul(p2,p);
+
+  /* denom = 4p^3 - g2p - g3 */
+  denom = gsl_complex_sub(gsl_complex_mul_real(p3,4.0),
+			  gsl_complex_add(gsl_complex_mul(p,g[0]),g[1]));
+
+  /* num = (p^2 + g2/4)^2 + 2g3p */
+  term = gsl_complex_add(p2,gsl_complex_mul_real(g[0],0.25));
+  num = gsl_complex_add(gsl_complex_mul(p,gsl_complex_mul_real(g[1],2.0)),
+			gsl_complex_mul(term,term));
+
+  return gsl_complex_div(num,denom);
+}
+
+/* Compute P using CGL/Lattes iteration */
+gsl_complex wP(gsl_complex z, const gsl_complex *g)
+{
+  int N = 6;
+  int i;
+  gsl_complex z0;
+  gsl_complex z02;
+  gsl_complex p;
+
+  z0 = gsl_complex_div_real(z,(double)(1 << N));
+  z02 = gsl_complex_mul(z0,z0);
+
+  /* Laurent expansion:  P \approx 1/z^2 + (g2/20)z^2 + (g3/28) z^4 */
+  p = gsl_complex_add(gsl_complex_inverse(z02),
+		      gsl_complex_add(gsl_complex_mul(z02,gsl_complex_mul_real(g[0],0.05)),
+				      gsl_complex_mul(gsl_complex_mul(z02,z02),gsl_complex_mul_real(g[1],_CONST_1_28))));
+
+  for (i=0;i<N;i++) {
+    p = P_doubler(p,g);
+  }
+
+  return p;
+}
+
+
+
+/* ---------------------------------------------------------------------- */
+/*                   UNUSED FUNCTIONS BELOW                               */
+/* ---------------------------------------------------------------------- */
 
 /*
 Both P(z,tau) and P'(z,tau) can be written in the form
@@ -327,5 +383,4 @@ gsl_complex wP_prime_theta_lc(gsl_complex z, gsl_complex tau, gsl_complex b2)
 
   return gsl_complex_mul(b2,gsl_complex_div(gsl_complex_mul(t2,gsl_complex_mul(t3,t4)), gsl_complex_mul(t1,gsl_complex_mul(t1,t1))));
 }
-
 

@@ -2,7 +2,7 @@
  * Filename:      weierstrass.h
  * Description:   the Weierstrass P function
  * Author:        David Dumas <david@dumas.io>
- * Modified at:   Wed Nov  6 10:33:30 2013
+ * Modified at:   Wed Nov  6 11:53:54 2013
  *                
  * Copyright (C) 2013  David Dumas
  *                
@@ -25,8 +25,13 @@ gsl_complex theta1(gsl_complex z, gsl_complex q, gsl_complex q14);
 gsl_complex theta2(gsl_complex z, gsl_complex q, gsl_complex q14);
 gsl_complex theta3(gsl_complex z, gsl_complex q);
 gsl_complex theta4(gsl_complex z, gsl_complex q);
-void compute_lattice_coefs(gsl_complex tau, gsl_complex *a1, gsl_complex *b1, gsl_complex *b2);
-gsl_complex wP_theta_lc(gsl_complex z, gsl_complex tau, gsl_complex a1, gsl_complex b1);
-gsl_complex wP_prime_theta_lc(gsl_complex z, gsl_complex tau, gsl_complex b2);
+void compute_invariants(gsl_complex tau, gsl_complex *g);
+gsl_complex wP(gsl_complex z, const gsl_complex *g);
+
+/*  Old method, using theta functions */
+/* void compute_lattice_coefs(gsl_complex tau, gsl_complex *a1, gsl_complex *b1, gsl_complex *b2); */
+/* gsl_complex wP_theta_lc(gsl_complex z, gsl_complex tau, gsl_complex a1, gsl_complex b1); */
+/* gsl_complex wP_prime_theta_lc(gsl_complex z, gsl_complex tau, gsl_complex b2); */
+
 
 #endif  /* ifndef _WEIERSTRASS_H_ */

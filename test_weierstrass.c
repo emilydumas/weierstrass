@@ -2,7 +2,7 @@
  * Filename:      test_weierstrass.c
  * Description:   test Weierstrass implementation
  * Author:        David Dumas <david@dumas.io>
- * Modified at:   Wed Nov  6 10:32:56 2013
+ * Modified at:   Wed Nov  6 11:51:11 2013
  *                
  * Copyright (C) 2013  David Dumas
  *                
@@ -26,15 +26,17 @@ int main(int argc, char *argv[])
   gsl_complex q14;
   gsl_complex v1,v2,v3,v4;
   gsl_complex v20,v30,v40;
-  gsl_complex a1,b1,b2,p,pp;
+  gsl_complex p,g[2];
 
-  gsl_complex z_tbl[6] = { {0.0, 0.0},
+  gsl_complex z_tbl[7] = { {0.0, 0.0},
 			   {0.5000000000, 0.8660254038},
 			   { 0.5000000000, 0.0000000000},
 			   { 0.9985675212, -0.0112661793},
 			   { 0.4347361266, 0.3543146131},
-			   { 3.0, -4.0} };
+			   { 3.0, -4.0},
+			   { 0.99, 0.99} };
 
+  /* theta tests at z=0 */
   for (i=0;i<4;i++) {
     q = gsl_complex_exp(gsl_complex_mul_imag(tau_tbl[i],M_PI));
     q14 = gsl_complex_exp(gsl_complex_mul_imag(tau_tbl[i],M_PI_4));
@@ -50,6 +52,7 @@ int main(int argc, char *argv[])
 	    GSL_REAL(v40),GSL_IMAG(v40));
   }
 
+  /* theta tests at general z */
   for (i=0;i<4;i++) {
     for (j=0;j<6;j++) {
       z = z_tbl[j];
@@ -71,18 +74,17 @@ int main(int argc, char *argv[])
     }
   }
 
+  /* wp tests */
   for (i=0;i<4;i++) {
-    for (j=0;j<6;j++) {
+    for (j=1;j<7;j++) {
       z = z_tbl[j];
       tau = tau_tbl[i];
-      compute_lattice_coefs(tau,&a1,&b1,&b2);
-      p = wP_theta_lc(z,tau,a1,b1);
-      pp = wP_prime_theta_lc(z,tau,b2);
-      fprintf(stderr,"z=(%f,%f) tau=(%f,%f) p=(%f,%f) pprime=(%f,%f)\n",
+      compute_invariants(tau,g);
+      p = wP(z,g);
+      fprintf(stderr,"z=(%f,%f) tau=(%f,%f) p=(%.20f,%.20f)\n",
 	      GSL_REAL(z),GSL_IMAG(z),
 	      GSL_REAL(tau),GSL_IMAG(tau),
-	      GSL_REAL(p),GSL_IMAG(p),
-	      GSL_REAL(pp),GSL_IMAG(pp));
+	      GSL_REAL(p),GSL_IMAG(p));
     }
   }
 }
