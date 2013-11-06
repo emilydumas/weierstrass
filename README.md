@@ -4,6 +4,10 @@ weierstrass
 Weierstrass P function and its derivative implemented in C by Lattès
 iteration (a variant of the Coquereaux-Grossmann-Lautrup method [1]).
 
+### Requirements
+
+* GNU Scientific Library (GSL), <http://www.gnu.org/software/gsl/>  (for complex number types, arithmetic, and complex trig functions)
+
 ### References
 
 1.  R. Coquereaux,  A. Grossmann, and B. Lautrup.  Iterative method
