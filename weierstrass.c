@@ -2,7 +2,7 @@
  * Filename:      weierstrass.c
  * Description:   the Weierstrass P function
  * Author:        David Dumas <david@dumas.io>
- * Modified at:   Wed Nov  6 12:21:54 2013
+ * Modified at:   Wed Nov  6 14:27:41 2013
  *                
  * Copyright (C) 2013  David Dumas
  *                
@@ -269,15 +269,39 @@ void P_and_Pprime_doubler(gsl_complex *p, gsl_complex *pp, const gsl_complex *g)
   *p = P_doubler(*p,g);
 }
 
+/* Assuming z is in the (1,tau) parallelogram, return the point
+   closest to the origin among all translates of z by the lattice. */
+gsl_complex near_origin(gsl_complex z, gsl_complex tau)
+{
+  int i;
+  gsl_complex znew;
+
+  znew = gsl_complex_sub_real(z,1.0);
+  if (gsl_complex_abs(z) > gsl_complex_abs(znew))
+    z = znew;
+
+  znew = gsl_complex_sub(z,tau);
+  if (gsl_complex_abs(z) > gsl_complex_abs(znew))
+    z = znew;
+
+  znew = gsl_complex_sub(z,gsl_complex_add_real(tau,1.0));
+  if (gsl_complex_abs(z) > gsl_complex_abs(znew))
+    z = znew;
+
+  return z;
+}
 
 /* Compute P using CGL/Lattes iteration */
-gsl_complex wP(gsl_complex z, const gsl_complex *g)
+/* NOTE: Assumes z is in fundamental parallelogram  */
+gsl_complex wP(gsl_complex z, gsl_complex tau, const gsl_complex *g)
 {
   int N = 6;
   int i;
   gsl_complex z0;
   gsl_complex z02;
   gsl_complex p;
+
+  z = near_origin(z,tau);
 
   z0 = gsl_complex_div_real(z,(double)(1 << N));
   z02 = gsl_complex_mul(z0,z0);
@@ -295,13 +319,18 @@ gsl_complex wP(gsl_complex z, const gsl_complex *g)
 }
 
 /* Compute P and P' using CGL/Lattes iteration */
-void wP_and_prime(gsl_complex z, const gsl_complex *g, gsl_complex *p, gsl_complex *pp)
+/* NOTE: Assumes z is in fundamental parallelogram  */
+void wP_and_prime(gsl_complex z, gsl_complex tau, const gsl_complex *g, gsl_complex *p, gsl_complex *pp)
 {
   int N = 6;
   int i;
+  int flip=0;
   gsl_complex z0;
   gsl_complex z02;
   gsl_complex pout, ppout;
+  gsl_complex ppsolve;
+
+  z = near_origin(z,tau);
 
   z0 = gsl_complex_div_real(z,(double)(1 << N));
   z02 = gsl_complex_mul(z0,z0);
@@ -320,8 +349,18 @@ void wP_and_prime(gsl_complex z, const gsl_complex *g, gsl_complex *p, gsl_compl
     P_and_Pprime_doubler(&pout, &ppout, g);
   }
 
+  /* At this point ppout is a decent but not great approximation of P'(z)        */
+  /* Instead of using it directly, we use it as a guide for which square root of */
+  /* (4P^3 - g2 P - g3) should be selected.                                      */
+
+  ppsolve = gsl_complex_sqrt(gsl_complex_sub(gsl_complex_mul_real(gsl_complex_mul(pout,gsl_complex_mul(pout,pout)),4.0),
+					     gsl_complex_add(gsl_complex_mul(g[0],pout),g[1])));
+
   *p = pout;
-  *pp = ppout;
+  if (gsl_complex_abs(gsl_complex_sub(ppsolve,ppout)) < gsl_complex_abs(gsl_complex_add(ppsolve,ppout)))
+    *pp = ppsolve;
+  else
+    *pp = gsl_complex_negative(ppsolve);
 }
 
 /* ---------------------------------------------------------------------- */

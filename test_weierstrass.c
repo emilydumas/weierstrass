@@ -2,7 +2,7 @@
  * Filename:      test_weierstrass.c
  * Description:   test Weierstrass implementation
  * Author:        David Dumas <david@dumas.io>
- * Modified at:   Wed Nov  6 12:29:35 2013
+ * Modified at:   Wed Nov  6 13:55:38 2013
  *                
  * Copyright (C) 2013  David Dumas
  *                
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
       z = z_tbl[j];
       tau = tau_tbl[i];
       compute_invariants(tau,g);
-      p = wP(z,g);
+      p = wP(z,tau,g);
       printf("z=(%f,%f) tau=(%f,%f) p=(%.20f,%.20f)\n",
 	     GSL_REAL(z),GSL_IMAG(z),
 	     GSL_REAL(tau),GSL_IMAG(tau),
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
       z = z_tbl[j];
       tau = tau_tbl[i];
       compute_invariants(tau,g);
-      wP_and_prime(z,g,&p,&pp);
+      wP_and_prime(z,tau,g,&p,&pp);
       printf("z=(%f,%f) tau=(%f,%f) p=(%.20f,%.20f) pp=(%.20f,%.20f)\n",
 	     GSL_REAL(z),GSL_IMAG(z),
 	     GSL_REAL(tau),GSL_IMAG(tau),
@@ -104,11 +104,12 @@ int main(int argc, char *argv[])
   }
 
   /* P and P' tests, grid for square torus */
-  compute_invariants(gsl_complex_rect(0.0,1.0),g);  
+  tau = gsl_complex_rect(0.0,1.0);
+  compute_invariants(tau,g);  
   for (i=0;i<19;i++) {
     for (j=0;j<19;j++) {
       z = gsl_complex_rect((j+1)*0.05,(i+1)*0.05);
-      wP_and_prime(z,g,&p,&pp);
+      wP_and_prime(z,tau,g,&p,&pp);
       printf("%.20f %.20f %.20f %.20f %.20f %.20f\n",
 	     GSL_REAL(z),GSL_IMAG(z),
 	     GSL_REAL(p),GSL_IMAG(p),
