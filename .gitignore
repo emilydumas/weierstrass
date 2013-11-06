@@ -16,6 +16,7 @@
 *.exe
 *.out
 *.app
+test_weierstrass
 
 # Backup and temp
 *~
