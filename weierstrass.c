@@ -2,7 +2,7 @@
  * Filename:      weierstrass.c
  * Description:   the Weierstrass P function
  * Author:        David Dumas <david@dumas.io>
- * Modified at:   Wed Nov  6 15:04:02 2013
+ * Modified at:   Wed Nov  6 17:10:38 2013
  *                
  * Copyright (C) 2013  David Dumas
  *                
@@ -314,7 +314,7 @@ gsl_complex wP(gsl_complex z, gsl_complex tau, const gsl_complex *g)
 /* NOTE: Assumes z is in fundamental parallelogram  */
 void wP_and_prime(gsl_complex z, gsl_complex tau, const gsl_complex *g, gsl_complex *p, gsl_complex *pp)
 {
-  int N = 6;
+  int N = 6;  /* Enough iterations for good P, not so good P' */
   int i;
   int flip=0;
   gsl_complex z0;
@@ -345,12 +345,56 @@ void wP_and_prime(gsl_complex z, gsl_complex tau, const gsl_complex *g, gsl_comp
   /* Instead of using it directly, we use it as a guide for which square root of */
   /* (4P^3 - g2 P - g3) should be selected.                                      */
 
-  ppsolve = gsl_complex_sqrt(gsl_complex_sub(gsl_complex_mul_real(gsl_complex_mul(pout,gsl_complex_mul(pout,pout)),4.0),
-					     gsl_complex_add(gsl_complex_mul(g[0],pout),g[1])));
+  ppsolve = gsl_complex_sqrt(
+                gsl_complex_sub(
+                    gsl_complex_mul_real(gsl_complex_mul(pout,gsl_complex_mul(pout,pout)),4.0),
+		    gsl_complex_add(gsl_complex_mul(g[0],pout),g[1])
+                )
+	    );
 
   *p = pout;
   if (gsl_complex_abs(gsl_complex_sub(ppsolve,ppout)) < gsl_complex_abs(gsl_complex_add(ppsolve,ppout)))
     *pp = ppsolve;
   else
     *pp = gsl_complex_negative(ppsolve);
+}
+
+/* Compute P using CGL/Lattes iteration */
+/* NOTE: Assumes z is in fundamental parallelogram  */
+gsl_complex wPprime(gsl_complex z, gsl_complex tau, const gsl_complex *g)
+{
+  gsl_complex p,pp;
+  
+  wP_and_prime(z,tau,g,&p,&pp);
+  return pp;
+}
+
+/* Compute P directly from tau */
+/* For speed, should compute and store g2,g3 if making many calls with same tau */
+gsl_complex wP_tau(gsl_complex z, gsl_complex tau)
+{
+  gsl_complex g[2];
+
+  compute_invariants(tau,g);
+  return wP(z,tau,g);
+}
+
+/* Compute P' directly from tau */
+/* For speed, should compute and store g2,g3 if making many calls with same tau */
+gsl_complex wPprime_tau(gsl_complex z, gsl_complex tau)
+{
+  gsl_complex g[2];
+
+  compute_invariants(tau,g);
+  return wPprime(z,tau,g);
+}
+
+/* Compute P' directly from tau */
+/* For speed, should compute and store g2,g3 if making many calls with same tau */
+void wP_and_prime_tau(gsl_complex z, gsl_complex tau, gsl_complex *p, gsl_complex *pp)
+{
+  gsl_complex g[2];
+
+  compute_invariants(tau,g);
+  wP_and_prime(z,tau,g,p,pp);
 }

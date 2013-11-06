@@ -2,7 +2,7 @@
  * Filename:      weierstrass.h
  * Description:   the Weierstrass P function
  * Author:        David Dumas <david@dumas.io>
- * Modified at:   Wed Nov  6 13:54:52 2013
+ * Modified at:   Wed Nov  6 17:12:40 2013
  *                
  * Copyright (C) 2013  David Dumas
  *                
@@ -25,9 +25,18 @@ gsl_complex theta1(gsl_complex z, gsl_complex q, gsl_complex q14);
 gsl_complex theta2(gsl_complex z, gsl_complex q, gsl_complex q14);
 gsl_complex theta3(gsl_complex z, gsl_complex q);
 gsl_complex theta4(gsl_complex z, gsl_complex q);
+
 void compute_invariants(gsl_complex tau, gsl_complex *g);
+
+/* Core functions, with g2,g3 precomputed */
 gsl_complex wP(gsl_complex z, gsl_complex tau, const gsl_complex *g);
+gsl_complex wPprime(gsl_complex z, gsl_complex tau, const gsl_complex *g);
 void wP_and_prime(gsl_complex z, gsl_complex tau, const gsl_complex *g, gsl_complex *p, gsl_complex *pp);
+
+/* Core functions, without g2,g3 precomputed (i.e. _tau = "directly from tau") */
+gsl_complex wP_tau(gsl_complex z, gsl_complex tau);
+gsl_complex wPprime_tau(gsl_complex z, gsl_complex tau);
+void wP_and_prime_tau(gsl_complex z, gsl_complex tau, gsl_complex *p, gsl_complex *pp);
 
 /*  Old method, using theta functions */
 /* void compute_lattice_coefs(gsl_complex tau, gsl_complex *a1, gsl_complex *b1, gsl_complex *b2); */
