@@ -2,7 +2,7 @@
  * Filename:      weierstrass.h
  * Description:   the Weierstrass P function
  * Author:        David Dumas <david@dumas.io>
- * Modified at:   Wed Nov  6 11:53:54 2013
+ * Modified at:   Wed Nov  6 12:13:02 2013
  *                
  * Copyright (C) 2013  David Dumas
  *                
@@ -27,6 +27,7 @@ gsl_complex theta3(gsl_complex z, gsl_complex q);
 gsl_complex theta4(gsl_complex z, gsl_complex q);
 void compute_invariants(gsl_complex tau, gsl_complex *g);
 gsl_complex wP(gsl_complex z, const gsl_complex *g);
+void wP_and_prime(gsl_complex z, const gsl_complex *g, gsl_complex *p, gsl_complex *pp);
 
 /*  Old method, using theta functions */
 /* void compute_lattice_coefs(gsl_complex tau, gsl_complex *a1, gsl_complex *b1, gsl_complex *b2); */

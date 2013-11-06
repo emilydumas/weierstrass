@@ -2,7 +2,7 @@
  * Filename:      weierstrass.c
  * Description:   the Weierstrass P function
  * Author:        David Dumas <david@dumas.io>
- * Modified at:   Wed Nov  6 11:55:23 2013
+ * Modified at:   Wed Nov  6 12:21:54 2013
  *                
  * Copyright (C) 2013  David Dumas
  *                
@@ -29,6 +29,9 @@
 
 /* 1/28 */
 #define _CONST_1_28 0.035714285714285714285714285714285714285714285714286
+
+/* 1/7 */
+#define _CONST_1_7 0.14285714285714285714285714285714285714285714285714
 
 /* For printf debugging (!) */
 void show(const char *name, gsl_complex value)
@@ -245,6 +248,28 @@ gsl_complex P_doubler(gsl_complex p, const gsl_complex *g)
   return gsl_complex_div(num,denom);
 }
 
+/* The extended Lattes map (rational function doubling on the elliptic curve) */
+void P_and_Pprime_doubler(gsl_complex *p, gsl_complex *pp, const gsl_complex *g)
+{
+  gsl_complex pp3;
+  gsl_complex ppp, ppp3;
+
+
+  /* p'' */
+  ppp = gsl_complex_sub(gsl_complex_mul_real(gsl_complex_mul(*p,*p),6.0),
+			gsl_complex_mul_real(g[0],0.5));
+  
+  ppp3 = gsl_complex_mul(ppp,gsl_complex_mul(ppp,ppp));
+  pp3 = gsl_complex_mul(*pp,gsl_complex_mul(*pp,*pp));
+
+  
+  *pp = gsl_complex_sub(gsl_complex_add(gsl_complex_mul_real(gsl_complex_div(gsl_complex_mul(*p,ppp),*pp),3.0),
+					gsl_complex_mul_real(gsl_complex_div(ppp3,pp3),-0.25)),
+			*pp);
+  *p = P_doubler(*p,g);
+}
+
+
 /* Compute P using CGL/Lattes iteration */
 gsl_complex wP(gsl_complex z, const gsl_complex *g)
 {
@@ -269,7 +294,35 @@ gsl_complex wP(gsl_complex z, const gsl_complex *g)
   return p;
 }
 
+/* Compute P and P' using CGL/Lattes iteration */
+void wP_and_prime(gsl_complex z, const gsl_complex *g, gsl_complex *p, gsl_complex *pp)
+{
+  int N = 6;
+  int i;
+  gsl_complex z0;
+  gsl_complex z02;
+  gsl_complex pout, ppout;
 
+  z0 = gsl_complex_div_real(z,(double)(1 << N));
+  z02 = gsl_complex_mul(z0,z0);
+
+  /* Laurent expansion:  P \approx 1/z^2 + (g2/20)z^2 + (g3/28) z^4 */
+  pout = gsl_complex_add(gsl_complex_inverse(z02),
+			 gsl_complex_add(gsl_complex_mul(z02,gsl_complex_mul_real(g[0],0.05)),
+					 gsl_complex_mul(gsl_complex_mul(z02,z02),gsl_complex_mul_real(g[1],_CONST_1_28))));
+
+  /* Laurent expansion:  P' \approx -2/z^3 + g2/10z + g3/7 z^3 */
+  ppout = gsl_complex_add(gsl_complex_mul_real(gsl_complex_inverse(gsl_complex_mul(z0,z02)),-2.0),
+			  gsl_complex_add(gsl_complex_mul(z0,gsl_complex_mul_real(g[0],0.1)),
+					  gsl_complex_mul(gsl_complex_mul(z0,z02),gsl_complex_mul_real(g[1],_CONST_1_7))));
+
+  for (i=0;i<N;i++) {
+    P_and_Pprime_doubler(&pout, &ppout, g);
+  }
+
+  *p = pout;
+  *pp = ppout;
+}
 
 /* ---------------------------------------------------------------------- */
 /*                   UNUSED FUNCTIONS BELOW                               */
@@ -383,4 +436,3 @@ gsl_complex wP_prime_theta_lc(gsl_complex z, gsl_complex tau, gsl_complex b2)
 
   return gsl_complex_mul(b2,gsl_complex_div(gsl_complex_mul(t2,gsl_complex_mul(t3,t4)), gsl_complex_mul(t1,gsl_complex_mul(t1,t1))));
 }
-
