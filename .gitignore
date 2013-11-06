@@ -17,5 +17,14 @@
 *.out
 *.app
 
-# Backups
+# Backup and temp
 *~
+*.orig
+*.lock
+*.DS_Store
+*.swp
+*.out
+*.tmp
+tags
+TAGS
+\#*#
