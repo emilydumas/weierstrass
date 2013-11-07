@@ -265,7 +265,6 @@ void P_and_Pprime_doubler(gsl_complex *p, gsl_complex *pp, const gsl_complex *g)
    closest to the origin among all translates of z by the lattice. */
 gsl_complex near_origin(gsl_complex z, gsl_complex tau)
 {
-  int i;
   gsl_complex znew;
 
   znew = gsl_complex_sub_real(z,1.0);
@@ -316,7 +315,6 @@ void wP_and_prime(gsl_complex z, gsl_complex tau, const gsl_complex *g, gsl_comp
 {
   int N = 6;  /* Enough iterations for good P, not so good P' */
   int i;
-  int flip=0;
   gsl_complex z0;
   gsl_complex z02;
   gsl_complex pout, ppout;
